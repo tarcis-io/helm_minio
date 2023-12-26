@@ -1,0 +1,8 @@
+apiVersion: v2
+
+name: helm_minio
+description: A Helm chart for deploying Minio to Kubernetes
+
+type: application
+version: 0.0.1
+appVersion: "RELEASE.2023-12-23T07-19-11Z"

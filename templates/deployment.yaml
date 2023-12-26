@@ -1,0 +1,41 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ .Values.app }}
+  labels:
+    app: {{ .Values.app }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.app }}
+  replicas: {{ .Values.deployment.replicas }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.app }}
+    spec:
+      containers:
+        - name: {{ .Values.app }}
+          image: {{ .Values.deployment.container.image }}
+          resources: {{- .Values.deployment.container.resources | toYaml | nindent 12 }}
+          ports: {{- .Values.deployment.container.ports | toYaml | nindent 12 }}
+          args: {{- .Values.deployment.container.args | toYaml | nindent 12 }}
+          volumeMounts: {{- .Values.deployment.container.volumeMounts | toYaml | nindent 12 }}
+          readinessProbe: {{- .Values.deployment.container.readinessProbe | toYaml | nindent 12 }}
+          livenessProbe: {{- .Values.deployment.container.livenessProbe | toYaml | nindent 12 }}
+          env:
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.app }}
+                  key: user
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.app }}
+                  key: password
+      volumes:
+        - name: {{ .Values.app }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.app }}
+  strategy: {{- .Values.deployment.strategy | toYaml | nindent 4 }}

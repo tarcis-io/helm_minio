@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ .Values.app }}
+  labels:
+    app: {{ .Values.app }}
+spec:
+  ipFamilies: {{- .Values.service.ipFamilies | toYaml | nindent 4 }}
+  ports: {{- .Values.service.ports | toYaml | nindent 4 }}
+  internalTrafficPolicy: {{ .Values.service.internalTrafficPolicy }}
+  type: {{ .Values.service.type }}
+  ipFamilyPolicy: {{ .Values.service.ipFamilyPolicy }}
+  sessionAffinity: {{ .Values.service.sessionAffinity }}
+  selector:
+    app: {{ .Values.app }}

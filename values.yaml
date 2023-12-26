@@ -1,0 +1,89 @@
+app: minio
+
+persistentVolumeClaim:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Gi
+  volumeMode: Filesystem
+
+secret:
+  user: minio
+  password: minio123
+
+deployment:
+  replicas: 1
+  container:
+    image: quay.io/minio/minio:RELEASE.2023-12-23T07-19-11Z
+    resources:
+      limits:
+        cpu: 500m
+        memory: 2Gi
+    ports:
+      - name: minio-api
+        protocol: TCP
+        containerPort: 9000
+      - name: minio-ui
+        protocol: TCP
+        containerPort: 9090
+    args:
+      - server
+      - /mnt
+      - --console-address
+      - :9090
+    volumeMounts:
+      - name: minio
+        mountPath: /mnt
+        subPath: minio
+    readinessProbe:
+      tcpSocket:
+        port: 9000
+      initialDelaySeconds: 5
+      timeoutSeconds: 1
+      periodSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+    livenessProbe:
+      tcpSocket:
+        port: 9000
+      initialDelaySeconds: 5
+      timeoutSeconds: 1
+      periodSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+  strategy:
+    type: Recreate
+
+service:
+  ipFamilies:
+    - IPv4
+  ports:
+    - name: minio-api
+      protocol: TCP
+      port: 9000
+      targetPort: 9000
+    - name: minio-ui
+      protocol: TCP
+      port: 9090
+      targetPort: 9090
+  internalTrafficPolicy: Cluster
+  type: ClusterIP
+  ipFamilyPolicy: SingleStack
+  sessionAffinity: None
+
+routeAPI:
+  port:
+    targetPort: minio-api
+  wildcardPolicy: None
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+
+routeUI:
+  port:
+    targetPort: minio-ui
+  wildcardPolicy: None
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
